@@ -2,6 +2,7 @@ const _ = require('lodash')
 const uriQuery = require('http-build-query')
 const hmacSHA512 = require('crypto-js/hmac-sha512')
 const axios = require('axios')
+const random = require('randomstring')
 
 const ErrorProvider = require('./errors')
 
@@ -78,12 +79,25 @@ Action.prototype.balance = function() {
  * 
  * @returns { Object }
  */
-Action.prototype.tradeHistory = function(pair) {
-    pair = Indodax.toPair(pair)
+Action.prototype.tradeHistory = function(config) {
+    let pair = undefined
+
+    try {
+        pair = Indodax.toPair(config.pair)
+    } catch (error) {
+        
+        return Promise.reject(ErrorProvider.ERRPAIR)
+    }
 
     return Indodax.execRequest({
         method: "tradeHistory",
-        pair: pair
+        pair: pair,
+        count: config.count,
+        from_id: config.from,
+        end_id: config.end,
+        order: config.orderBy,
+        since: (_.isUndefined(config.date)) ? undefined : config.date.since,
+        end: (_.isUndefined(config.date)) ? undefined : config.date.end,
     }).then(res => {
         if (res.status === 200) {
             if (res.data.success) {
@@ -207,6 +221,52 @@ Action.prototype.sell = function (config) {
     })
 }
 
+Action.prototype.getOrder = function(config) {
+    let pair = undefined
+
+    try {
+        pair = Indodax.toPair(config.pair)
+    } catch(e) {
+        return Promise.reject(ErrorProvider.ERRPAIR)
+    }
+
+    return Indodax.execRequest({
+        method: 'getOrder',
+        pair: pair,
+        order_id: config.id
+    }).then(res => {
+        if (res.status === 200) {
+            if (res.data.success) {
+
+                return res.data.return.order
+            }
+        }
+    })
+}
+Action.prototype.cancelOrder = function(config) {
+    let pair = undefined
+
+    try {
+        pair = Indodax.toPair(config.pair)
+    } catch(e) {
+
+        return Promise.reject(ErrorProvider.ERRPAIR)
+    }
+
+    return Indodax.execRequest({
+        method: 'cancelOrder',
+        pair: pair,
+        order_id: config.id,
+        type: config.type
+    }).then(res => {
+        if (res.status === 200) {
+            if (res.data.success) {
+
+                return res.data.return
+            }
+        }
+    })
+}
 Indodax.action = new Action()
 
 module.exports = Indodax
