@@ -1,0 +1,1 @@
+#XTrade Trading Bot
