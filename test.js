@@ -35,11 +35,13 @@ describe('Indodax', function() {
     })
     describe('Trading', function () {
         it('tradeHistory: should return object', function (done) {
-            Indodax.action.tradeHistory(['doge', 'btc']).then(res => {
+            Indodax.action.tradeHistory({
+                pair: ['doge', 'btc']
+            }).then(res => {
                 expect(typeof res, "object")
 
                 done()
-            })
+            }).catch(console.error)
         })
         it('openOrders: should return array', function (done) {
             Indodax.action.openOrders(['doge', 'btc']).then(res => {
