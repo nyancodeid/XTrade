@@ -1,4 +1,14 @@
 {
+  "name": "XTrade",
+  "version": "1.0.0",
+  "description": "XTrade Trading Bot",
+  "main": "index.js",
+  "repository": "https://github.com/nyancodeid/XTrade.git",
+  "author": "Ryan Aunur Rassyid <ryandevstudio@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha"
+  },
   "dependencies": {
     "async": "^2.6.0",
     "axios": "^0.18.0",
@@ -6,5 +16,9 @@
     "dotenv": "^5.0.1",
     "http-build-query": "^0.6.1",
     "lodash": "^4.17.10"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1"
   }
 }
