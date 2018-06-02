@@ -1,15 +1,17 @@
 const _ = require('lodash')
-const async = require('async')
 
-const Actions = function() {
-    
+const Trade = require('./trade')
+
+let Tradings = {
+    PingPong(config) {
+        config.strategy = "pingpong"
+
+        new Trade(config)
+    }
 }
 
-Actions.prototype.buy = function() {
-    
-}
-Actions.prototype.sell = function() {
-    
+let Actions = {
+    do: Tradings
 }
 
-module.exports = new Actions()
+module.exports = Actions

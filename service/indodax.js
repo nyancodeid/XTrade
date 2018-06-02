@@ -2,7 +2,6 @@ const _ = require('lodash')
 const uriQuery = require('http-build-query')
 const hmacSHA512 = require('crypto-js/hmac-sha512')
 const axios = require('axios')
-const random = require('randomstring')
 
 const ErrorProvider = require('./errors')
 
@@ -10,6 +9,8 @@ let Indodax = {
     toPair(objectPair) {
         if (_.isArray(objectPair)) {
             return objectPair.join('_')
+        } else if (_.isString(objectPair)) {
+            return objectPair.replace('/', '_').toLowerCase() 
         } else {
             throw new Error(ErrorProvider.ERRPAIR.message);
         }
@@ -20,13 +21,19 @@ let Indodax = {
     isPairIDR(pair) {
         if (_.isArray(pair)) {
 
-            return (pair[1].toLowerCase() === "btc") ? true : false
+            return (pair[1].toLowerCase() === "idr") ? true : false
+        } else if (_.isString(pair)) {
+            
+            return (pair.toLowerCase().lastIndexOf('idr') != -1) ? true : false
         }
     },
     isPairBTC(pair) {
         if (_.isArray(pair)) {
 
-            return (pair[1].toLowerCase() === "idr") ? true : false
+            return (pair[1].toLowerCase() === "btc") ? true : false
+        } else if (_.isString(pair)) {
+
+            return (pair.toLowerCase().lastIndexOf('btc') != -1) ? true : false
         }
     },
     makeSign(datas) {
@@ -50,10 +57,49 @@ let Indodax = {
         })
     }
 }
+/**
+ * @class Action
+ */
 let Action = function() {
     
 }
 
+/**
+ * @description get all pairs available on Indodax Exchange
+ * @return {Object} 
+ * 
+ * @example
+ * .toString() ['btc_idr', 'doge_btc', ...]
+ * .toArray() [['btc], 'idr], ['doge','btc'], ...]
+ */
+Action.prototype.getPairs = function() {
+
+    return axios.get(process.env.URI_WEBDATA).then(res => {
+        if (res.status === 200) {
+            let prices = res.data.prices
+            let pairs = Object.keys(prices)
+                pairs = pairs.map(pair => {
+                    if (Indodax.isPairBTC(pair)) {
+                        return pair.slice(0, -3) + "_btc"
+                    } else if (Indodax.isPairIDR(pair)) {
+                        return pair.slice(0, -3) + "_idr"
+                    }
+                })        
+                
+            return {
+                string: pairs,
+                object: pairs.map(pair => {
+                    return {
+                        id: pair,
+                        pair: pair.split('_').join('/').toUpperCase(),
+                        base: pair.split('_')[1],
+                        symbol: pair.split('_')[0].toUpperCase()
+                    }
+                })
+            }
+        }
+    })
+}
 /**
  * @description get account balance every currency
  * 
@@ -139,7 +185,7 @@ Action.prototype.openOrders = function(pair) {
  * 
  * @returns { Object }
  */
-Action.prototype.get = function (pair) {
+Action.prototype.ticker = function (pair) {
     pair = Indodax.toPair(pair)
 
     return axios.get(Indodax.toTicker(pair)).then(body => {
