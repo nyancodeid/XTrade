@@ -2,6 +2,7 @@ const async = require('async')
 const _ = require('lodash')
 
 const Indodax = require('../service/indodax')
+const Services = require('../service/background_task')
 const Logs = require('./log')
 
 const Strategy = {
@@ -14,6 +15,8 @@ let Trade = function (config) {
     this.config = config
 
     this.doTrade()
+
+    Services.start(config)
 }
 
 Trade.prototype.makeDecision = function () {
